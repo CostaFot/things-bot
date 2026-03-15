@@ -120,7 +120,7 @@ async def get_ai_summary(client: httpx.AsyncClient, title: str, url: str, user_c
 # ── Markdown builder ───────────────────────────────────────────────────────────
 
 def today_heading() -> str:
-    return datetime.now().strftime("## Things — %-d %B %Y")
+    return datetime.now().strftime("## %-d %B %Y")
 
 def build_entry(title: str, url: str | None, comment: str, summary: str) -> str:
     note = comment or summary
@@ -147,14 +147,16 @@ def insert_entry(existing: str, entry: str) -> str:
             return "\n".join(lines) + "\n"
 
     # Today's section doesn't exist — prepend it after the top-level header
-    new_section = f"\n{heading}\n\n{entry}\n"
     for i, line in enumerate(lines):
         if line.startswith("# "):
+            has_existing = any(l.startswith("## ") for l in lines[i + 1:])
+            sep = "\n\n---" if has_existing else ""
+            new_section = f"\n{heading}\n\n{entry}{sep}\n"
             lines.insert(i + 1, new_section)
             return "\n".join(lines) + "\n"
 
     # No top-level header found — just prepend everything
-    return f"# Things\n{new_section}" + existing
+    return f"# Things\n\n{heading}\n\n{entry}\n" + existing
 
 # ── Telegram handlers ──────────────────────────────────────────────────────────
 
@@ -208,7 +210,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             except httpx.HTTPStatusError as e:
                 if e.response.status_code == 404:
                     # File doesn't exist yet — create it
-                    content = "# Things\n"
+                    content = "---\ntitle: Things\ndescription: Links and notes worth keeping\n---\n\n# Things\n"
                     sha = None
                 else:
                     raise
