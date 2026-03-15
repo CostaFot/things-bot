@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Things Bot — Telegram bot that appends links/notes to a GitHub markdown file.
-Send a URL or text to the bot → it updates THINGS.md in your GitHub repo.
+Send a URL or text to the bot → it updates index.md in your GitHub repo.
 """
 
 import os
@@ -20,7 +20,7 @@ from telegram.ext import Application, MessageHandler, CommandHandler, filters, C
 TELEGRAM_TOKEN   = os.environ["TELEGRAM_TOKEN"]
 GITHUB_TOKEN     = os.environ["GITHUB_TOKEN"]
 GITHUB_REPO      = os.environ["GITHUB_REPO"]       # e.g. "CostaFot/things"
-GITHUB_FILE_PATH = os.environ.get("GITHUB_FILE_PATH", "THINGS.md")
+GITHUB_FILE_PATH = os.environ.get("GITHUB_FILE_PATH", "index.md")
 ALLOWED_USER_ID  = int(os.environ["ALLOWED_USER_ID"])  # your Telegram user ID
 ANTHROPIC_KEY    = os.environ.get("ANTHROPIC_API_KEY", "")  # optional, for summaries
 
@@ -248,7 +248,7 @@ async def handle_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "• A URL → I'll grab the title and save it\n"
         "• A URL + comment → saved with your note\n"
         "• Just text → saved as a plain note\n\n"
-        "Everything goes into your THINGS.md on GitHub."
+        "Everything goes into your index.md on GitHub."
     )
 
 # ── Main ───────────────────────────────────────────────────────────────────────

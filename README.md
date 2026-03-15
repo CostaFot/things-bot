@@ -70,7 +70,7 @@ cp .env.example .env
 | `TELEGRAM_TOKEN` | Yes | Token from @BotFather |
 | `GITHUB_TOKEN` | Yes | Personal access token with `repo` scope |
 | `GITHUB_REPO` | Yes | Target repo in `owner/repo` format |
-| `GITHUB_FILE_PATH` | No | Path to the Markdown file (default: `THINGS.md`) |
+| `GITHUB_FILE_PATH` | No | Path to the Markdown file (default: `index.md`) |
 | `ALLOWED_USER_ID` | Yes | Your Telegram numeric user ID |
 | `ANTHROPIC_API_KEY` | No | Claude API key for auto-summaries |
 
