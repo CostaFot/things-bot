@@ -146,17 +146,17 @@ def insert_entry(existing: str, entry: str) -> str:
             lines.insert(insert_at, entry)
             return "\n".join(lines) + "\n"
 
-    # Today's section doesn't exist — prepend it after the top-level header
-    for i, line in enumerate(lines):
-        if line.startswith("# "):
-            has_existing = any(l.startswith("## ") for l in lines[i + 1:])
-            sep = "\n\n---" if has_existing else ""
-            new_section = f"\n{heading}\n\n{entry}{sep}\n"
-            lines.insert(i + 1, new_section)
-            return "\n".join(lines) + "\n"
+    # Today's section doesn't exist — insert after frontmatter closing ---
+    new_section = f"\n{heading}\n\n{entry}\n"
+    if lines and lines[0].strip() == "---":
+        for i in range(1, len(lines)):
+            if lines[i].strip() == "---":
+                lines.insert(i + 1, new_section)
+                return "\n".join(lines) + "\n"
 
-    # No top-level header found — just prepend everything
-    return f"# Things\n\n{heading}\n\n{entry}\n" + existing
+    # No frontmatter — prepend with it
+    frontmatter = "---\nlayout: default\ntitle: Things\n---"
+    return f"{frontmatter}\n{new_section}" + existing
 
 # ── Telegram handlers ──────────────────────────────────────────────────────────
 
@@ -210,7 +210,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             except httpx.HTTPStatusError as e:
                 if e.response.status_code == 404:
                     # File doesn't exist yet — create it
-                    content = "---\ntitle: Things\ndescription: Links and notes worth keeping\n---\n\n# Things\n"
+                    content = "---\nlayout: default\ntitle: Things\n---\n"
                     sha = None
                 else:
                     raise
