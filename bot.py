@@ -196,6 +196,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             else:
                 title = comment
                 url = None
+                comment = ""
                 summary = ""
 
             # Build the new entry line
