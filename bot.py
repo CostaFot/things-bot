@@ -135,9 +135,11 @@ def today_heading() -> str:
 def build_entry(title: str, url: str | None, comment: str, summary: str) -> str:
     note = comment or summary
     if url:
-        line = f"- [{title}]({url})"
+        line = f"- 🔗 [{title}]({url})"
+    elif title.lower().startswith("idea"):
+        line = f"- 💡 {title[4:].lstrip()}"
     else:
-        line = f"- {title}"
+        line = f"- 💬 {title}"
     if note:
         line += f" — {note}"
     return line
@@ -209,7 +211,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 caption = text.strip()
                 title = caption or f"Image {timestamp}"
                 img_tag = f'<img src="{img_url}" alt="{title}" width="320">'
-                entry = f"- {img_tag}"
+                entry = f"- 🖼️ {img_tag}"
                 if caption:
                     entry += f" — {caption}"
             else:
