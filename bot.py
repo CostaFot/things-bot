@@ -132,34 +132,37 @@ async def get_ai_summary(client: httpx.AsyncClient, title: str, url: str, user_c
 def today_heading() -> str:
     return datetime.now().strftime("## %-d %B %Y")
 
-DOMAIN_EMOJI = {
-    "github.com":             "🛠️",
-    "gitlab.com":             "🛠️",
-    "youtube.com":            "▶️",
-    "youtu.be":               "▶️",
-    "x.com":                  "🐦",
-    "twitter.com":            "🐦",
-    "reddit.com":             "👾",
-    "medium.com":             "📝",
-    "substack.com":           "📝",
-    "stackoverflow.com":      "💻",
-    "developer.android.com":  "🤖",
-    "d.android.com":          "🤖",
-    "spotify.com":            "🎵",
-    "instagram.com":          "📸",
+DOMAIN_ICON = {
+    "github.com":             "github",
+    "gitlab.com":             "gitlab",
+    "youtube.com":            "youtube",
+    "youtu.be":               "youtube",
+    "x.com":                  "x",
+    "twitter.com":            "x",
+    "reddit.com":             "reddit",
+    "medium.com":             "medium",
+    "substack.com":           "substack",
+    "stackoverflow.com":      "stackoverflow",
+    "developer.android.com":  "android",
+    "d.android.com":          "android",
+    "spotify.com":            "spotify",
+    "instagram.com":          "instagram",
+    "linkedin.com":           "linkedin",
+    "hackernews.com":         "ycombinator",
+    "news.ycombinator.com":   "ycombinator",
 }
 
-def url_emoji(url: str) -> str:
+def url_icon(url: str) -> str:
     host = urlparse(url).netloc.lower().removeprefix("www.")
-    for domain, emoji in DOMAIN_EMOJI.items():
+    for domain, slug in DOMAIN_ICON.items():
         if host == domain or host.endswith("." + domain):
-            return emoji
+            return f'<img src="https://cdn.simpleicons.org/{slug}" width="14" height="14" style="vertical-align:middle">'
     return "🔗"
 
 def build_entry(title: str, url: str | None, comment: str, summary: str) -> str:
     note = comment or summary
     if url:
-        line = f"- {url_emoji(url)} [{title}]({url})"
+        line = f"- {url_icon(url)} [{title}]({url})"
     elif title.lower().startswith("idea"):
         line = f"- 💡 {title[4:].lstrip()}"
     else:
