@@ -132,10 +132,34 @@ async def get_ai_summary(client: httpx.AsyncClient, title: str, url: str, user_c
 def today_heading() -> str:
     return datetime.now().strftime("## %-d %B %Y")
 
+DOMAIN_EMOJI = {
+    "github.com":             "🛠️",
+    "gitlab.com":             "🛠️",
+    "youtube.com":            "▶️",
+    "youtu.be":               "▶️",
+    "x.com":                  "🐦",
+    "twitter.com":            "🐦",
+    "reddit.com":             "👾",
+    "medium.com":             "📝",
+    "substack.com":           "📝",
+    "stackoverflow.com":      "💻",
+    "developer.android.com":  "🤖",
+    "d.android.com":          "🤖",
+    "spotify.com":            "🎵",
+    "instagram.com":          "📸",
+}
+
+def url_emoji(url: str) -> str:
+    host = urlparse(url).netloc.lower().removeprefix("www.")
+    for domain, emoji in DOMAIN_EMOJI.items():
+        if host == domain or host.endswith("." + domain):
+            return emoji
+    return "🔗"
+
 def build_entry(title: str, url: str | None, comment: str, summary: str) -> str:
     note = comment or summary
     if url:
-        line = f"- 🔗 [{title}]({url})"
+        line = f"- {url_emoji(url)} [{title}]({url})"
     elif title.lower().startswith("idea"):
         line = f"- 💡 {title[4:].lstrip()}"
     else:
