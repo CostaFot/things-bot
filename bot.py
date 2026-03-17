@@ -46,6 +46,16 @@ async def gh_get_file(client: httpx.AsyncClient) -> tuple[str, str]:
     content = base64.b64decode(data["content"]).decode("utf-8")
     return content, data["sha"]
 
+async def gh_upload_image(client: httpx.AsyncClient, data: bytes, path: str, message: str):
+    """Upload a binary file (e.g. photo) to GitHub."""
+    import base64
+    url = f"{GH_API}/repos/{GITHUB_REPO}/contents/{path}"
+    r = await client.put(url, headers=GH_HEADERS, json={
+        "message": message,
+        "content": base64.b64encode(data).decode("utf-8"),
+    }, timeout=30)
+    r.raise_for_status()
+
 async def gh_update_file(client: httpx.AsyncClient, content: str, sha: str, message: str):
     """Commits updated content back to GitHub."""
     import base64
@@ -177,32 +187,46 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     text = update.message.text or update.message.caption or ""
-    if not text:
-        await update.message.reply_text("Send me a URL or a note.")
+    photos = update.message.photo
+
+    if not text and not photos:
+        await update.message.reply_text("Send me a URL, a note, or a photo.")
         return
 
     await update.message.reply_text("⏳ Saving...")
 
-    url, comment = split_url_and_comment(text)
-
     try:
         async with httpx.AsyncClient() as client:
-            # Resolve title
-            if url:
-                yt_id = extract_youtube_id(url)
-                if yt_id:
-                    title = await get_youtube_title(client, yt_id)
-                else:
-                    title = await get_page_title(client, url)
-                summary = await get_ai_summary(client, title, url, comment)
+            if photos:
+                tg_file = await context.bot.get_file(photos[-1].file_id)
+                img_bytes = bytes(await tg_file.download_as_bytearray())
+                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                ext = (tg_file.file_path or "photo.jpg").rsplit(".", 1)[-1]
+                img_path = f"images/{timestamp}.{ext}"
+                await gh_upload_image(client, img_bytes, img_path,
+                                      f"things: add image {timestamp}")
+                img_url = f"https://raw.githubusercontent.com/{GITHUB_REPO}/main/{img_path}"
+                caption = text.strip()
+                title = caption or f"Image {timestamp}"
+                entry = f"- ![{title}]({img_url})"
+                if caption:
+                    entry += f" — {caption}"
             else:
-                title = comment
-                url = None
-                comment = ""
-                summary = ""
-
-            # Build the new entry line
-            entry = build_entry(title, url, comment, summary)
+                url, comment = split_url_and_comment(text)
+                # Resolve title
+                if url:
+                    yt_id = extract_youtube_id(url)
+                    if yt_id:
+                        title = await get_youtube_title(client, yt_id)
+                    else:
+                        title = await get_page_title(client, url)
+                    summary = await get_ai_summary(client, title, url, comment)
+                else:
+                    title = comment
+                    url = None
+                    comment = ""
+                    summary = ""
+                entry = build_entry(title, url, comment, summary)
 
             # Read → update → commit
             try:
@@ -256,7 +280,7 @@ async def handle_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 def main():
     app = Application.builder().token(TELEGRAM_TOKEN).build()
     app.add_handler(CommandHandler("start", handle_start))
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+    app.add_handler(MessageHandler((filters.TEXT | filters.PHOTO) & ~filters.COMMAND, handle_message))
     log.info("Bot running...")
     app.run_polling(drop_pending_updates=True)
 
