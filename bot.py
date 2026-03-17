@@ -151,24 +151,15 @@ def insert_entry(existing: str, entry: str) -> str:
     # Find today's section
     for i, line in enumerate(lines):
         if line.strip() == heading:
-            # Insert after heading, skip any blank lines
             insert_at = i + 1
             while insert_at < len(lines) and lines[insert_at].strip() == "":
                 insert_at += 1
             lines.insert(insert_at, entry)
             return "\n".join(lines) + "\n"
 
-    # Today's section doesn't exist — insert after frontmatter closing ---
-    new_section = f"\n{heading}\n\n{entry}\n"
-    if lines and lines[0].strip() == "---":
-        for i in range(1, len(lines)):
-            if lines[i].strip() == "---":
-                lines.insert(i + 1, new_section)
-                return "\n".join(lines) + "\n"
-
-    # No frontmatter — prepend with it
-    frontmatter = "---\nlayout: default\ntitle: Things\n---"
-    return f"{frontmatter}\n{new_section}" + existing
+    # Today's section doesn't exist — prepend it
+    new_section = f"{heading}\n\n{entry}\n"
+    return new_section + "\n" + existing
 
 # ── Telegram handlers ──────────────────────────────────────────────────────────
 
@@ -236,8 +227,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 content, sha = await gh_get_file(client)
             except httpx.HTTPStatusError as e:
                 if e.response.status_code == 404:
-                    # File doesn't exist yet — create it
-                    content = "---\nlayout: default\ntitle: Things\n---\n"
+                    content = ""
                     sha = None
                 else:
                     raise
