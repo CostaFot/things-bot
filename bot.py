@@ -158,7 +158,7 @@ def insert_entry(existing: str, entry: str) -> str:
             return "\n".join(lines) + "\n"
 
     # Today's section doesn't exist — prepend it
-    new_section = f"{heading}\n\n{entry}\n"
+    new_section = f"{heading}\n\n\n{entry}\n"
     return new_section + "\n" + existing
 
 # ── Telegram handlers ──────────────────────────────────────────────────────────
