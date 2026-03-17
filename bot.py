@@ -208,7 +208,8 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 img_url = f"https://raw.githubusercontent.com/{GITHUB_REPO}/main/{img_path}"
                 caption = text.strip()
                 title = caption or f"Image {timestamp}"
-                entry = f"- ![{title}]({img_url})"
+                img_tag = f'<img src="{img_url}" alt="{title}" width="320">'
+                entry = f"- {img_tag}"
                 if caption:
                     entry += f" — {caption}"
             else:
