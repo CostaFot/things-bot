@@ -243,7 +243,7 @@ async def handle_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_user.id != ALLOWED_USER_ID:
         return
     await update.message.reply_text(
-        "👋 Things Bot ready.\n\n"
+        "👋 Things Bot v2 ready.\n\n"
         "Send me:\n"
         "• A URL → I'll grab the title and save it\n"
         "• A URL + comment → saved with your note\n"
